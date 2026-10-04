@@ -90,4 +90,19 @@ Bunker de Hellas (pénétration ≥ 25 m) · pôle nord de Mercure (précision 1
 
 ## Pistes d'extension
 Lunes (Titan, Lune), cibles gazeuses (nécessite un ciblage en plan B plutôt qu'un point à date fixe),
-perturbations Soleil-barycentre, cibles mobiles, sauvegarde des scores, interface `curses`.
+perturbations Soleil-barycentre, cibles mobiles, sauvegarde des scores, interface `curses`, visualisation des changement dans une fenetre, autre type de canon (laser, a poudre, railgun avec conso d'energie etc), autre mode de jeu (canon en orbite qui tire sur le sol, canon orbital qui tire sur vaisseau), autre moyen de jouer pour le mode planete-planete car celui ci est basé sur la chance ou l'utilisation de l'ordinateur de bord, systeme d'amélioration, gestion de ressource, utilisation d'autre bibliotéque si nécessaire, autre projectile en fonction de la mission(gaz, antiblindage, projectile sale à la façon des bombe mais sans explosion atomique, projectile à antimatiere et autre), mission de déroutage d'astéroide, contract de protection ou d'élimination.
+
+Pour les mission de destruction de vaisseau qui attaque la planete j'aimerais que les vaisseau ait des bouclier capable de dissipé une certaine quantité d'énérgie puis que il y ait la coque dérière et que les vaisseau soit divisé en plusieur partie qui changerait en fonction de la classe du vaisseau. Que certain projectile soit plus effiace contre les boucliers ou la coque. Par exemple un prejectile contenant de la férite cappable de dissipé les boucliers ou bien une barre en tungstène avec d'abord un pic pour transpèrsé la coque puis une ogive pour faire explosé l'intérieur du vaisseau.
+
+J'aimerais qu'il y ait un autre type d'attaque de vaisseau. Celui qui passent par les contract et qui attaque une autre planete que la notre et donc beaucoup trop loin pour que les canon orbitaux de défense les attaque. Il faudra alors utilisé le canon intérplanétaire pour envoiyer une bombe nucleaire ou à antimatière pour faire explosé le groupe de vaisseau.
+Les vaisseau enemie pourrait aussi nous attaqué il faudrait donc bien choissir quelle partie du vaisseau détruire en premier pour être le plus éfficase. Si une station est détruite ou endomagé il faudra alors la réparer et cela coutera de l'argent. Tout comme les projectile et l'energie utilisé pour les tiré qui ne sont pas gratuit.
+
+J'aimerais qu'il y ait plusieur type de vaisseau : Classe capitale (les plus gros), destroyer, transport de troupe, minié, patrouilleur, soutien, corvette, frégate etc
+
+Les projectile tiré par les station orbital sont beaucoup plus petit (ayant une taille max) mais toujour très rapide (< à 50% de c)
+
+les station de défense orbital serait plus nombreuse et dispérsé tout autour de la planète. On pourra donc choisir la quelle on souhaite pour executé la mission.
+
+J'aimerais que tout cela tourne sur la même partie, c'est a dire pas besoin d'aller dans un menu pour changé le mode de jeu. Je prefererais que l'on puissent choisir avec quoi tiré en fonction de la mission dinamiquement. Que l'on puissent dire oui ou bien refusé un contract mais pas les mission prioritaire comme les attaque de vaisseau enemie sur la planète ou bien les asteroide.
+
+Au niveau du gameplay il faudrait quelque chose de beaucoup moins basé sur la chance et deanderais peut etre a faire un peu de calcule si necessaire. Imaginons qu'une mission prioritaire d'un destroyer qui arrive sur la planete. Sont angle d'arrivé et alors indiqué. On sélectionne la station de défense qui correspond le mieux a l'angle de tire. Depuis cette station il faudrait qu'il s'affiche sur notre interface le vaisseau fait de boite qui correspond au different composant de celui-ci que l'on peut detruire. On peut alors en selectionné un et le jeu nous donne des coordonné par rapport à la planete et il est alors a nous de calculer l'orientation de la station. Il nous faut alors ensuite choisir le projectile. La vitesse des projectile etant très grande on peut considére qu'il vont en ligne droite alors on choisi la vitesse entre 50 et 95 % de c et on fait feu puis on voit comment la cible réagit et on recommence.
