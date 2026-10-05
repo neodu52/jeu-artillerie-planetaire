@@ -3,12 +3,23 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from ..constants import C_KMS
 from ..solarsystem.rotation import pole_vector
 from ..solarsystem.system import SolarSystem
 
-V_MAX_KMS = 100.0          # vitesse de bouche maximale
+V_MAX_KMS = C_KMS * (1.0 - 1e-9)   # vitesse de bouche max : tout juste sous c
 E_MAX_J = 1.0e16           # énergie maximale par tir (~2,4 Mt TNT)
 CANNON_MASS_KG = 2.0e9     # masse de la station (pour le recul)
+
+
+def add_velocity(V, u):
+    """Composition relativiste : u (vitesse mesurée dans le repère de la station, qui se déplace
+    à V) vue du repère héliocentrique."""
+    V, u = np.asarray(V, float), np.asarray(u, float)
+    c2 = C_KMS ** 2
+    g = 1.0 / np.sqrt(1.0 - (V @ V) / c2)
+    vu = (V @ u) / c2
+    return (u / g + V + (g / (1.0 + g)) * vu * V) / (1.0 + vu)
 
 
 def direction_vector(lon_deg: float, lat_deg: float) -> np.ndarray:
@@ -59,5 +70,6 @@ class GaussCannon:
         i = self.system.index("Saturne")
         return CannonState(r_rel, v_rel, P[i] + r_rel, V[i] + v_rel)
 
-    def recoil_kms(self, rod_mass_kg: float, speed_kms: float) -> float:
-        return rod_mass_kg * speed_kms / CANNON_MASS_KG
+    def recoil_kms(self, momentum_kg_ms: float) -> float:
+        """Recul de la station (km/s) pour une quantité de mouvement donnée."""
+        return momentum_kg_ms / CANNON_MASS_KG / 1e3

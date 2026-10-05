@@ -11,6 +11,8 @@ DAY_S = 86_400.0
 YEAR_S = 365.25 * DAY_S
 CENTURY_S = 36_525.0 * DAY_S
 
+C_KMS = 299_792.458               # vitesse de la lumière (km/s)
+C_MS = 299_792_458.0
 GM_SUN = 1.32712440018e11          # km^3/s^2
 SUN_RADIUS_KM = 695_700.0
 

@@ -23,7 +23,35 @@ def fmt_energy(e_j: float) -> str:
 
 
 def fmt_mass(m: float) -> str:
-    return f"{m:,.0f} kg".replace(",", " ")
+    if m >= 100:
+        return f"{m:,.0f} kg".replace(",", " ")
+    if m >= 1:
+        return f"{m:.3g} kg"
+    if m >= 1e-3:
+        return f"{m * 1e3:.3g} g"
+    return f"{m * 1e6:.3g} mg"
+
+
+def fmt_speed(v_kms: float) -> str:
+    from ..constants import C_KMS
+    if v_kms >= 1000:
+        return f"{v_kms:,.0f} km/s ({v_kms / C_KMS:.5f} c)".replace(",", " ")
+    return f"{v_kms:g} km/s"
+
+
+def fmt_duration(s: float) -> str:
+    s = abs(s)
+    if s < 120:
+        return f"{s:.1f} s"
+    if s < 7200:
+        return f"{s / 60:.1f} min"
+    if s < 2 * 86400:
+        return f"{s / 3600:.1f} h"
+    return f"{s / 86400:,.1f} j".replace(",", " ")
+
+
+def money(x: float) -> str:
+    return f"{x:,.0f} cr".replace(",", " ")
 
 
 def table(rows, header):
@@ -75,51 +103,3 @@ def ascii_map(system, t, extent_au=None, width=73, height=37) -> str:
     return "\n".join("".join(r) for r in grid) + f"\n* Soleil   {legend}\n({scale}, vue du pôle nord écliptique)"
 
 
-def briefing(m, game) -> str:
-    lines = [c(f"MISSION : {m.title}", BOLD, CYAN), m.briefing, "",
-             f"  Cible            : {m.target}, latitude {m.lat:+.2f}°, longitude {m.lon:+.2f}° (Est)",
-             f"  Précision        : impact à moins de {m.tolerance_km:g} km du point visé",
-             f"  Énergie à la bouche : {fmt_energy(m.energy_j)} ± {m.energy_tol * 100:g} %"]
-    if m.min_penetration_m:
-        lines.append(f"  Pénétration min. : {m.min_penetration_m:g} m (roche, limite hydrodynamique)")
-    if m.max_flight_days:
-        lines.append(f"  Délai maximal    : impact {m.max_flight_days:g} jours au plus après le tir")
-    return "\n".join(lines)
-
-
-def shot_report(rep, system) -> str:
-    r, m = rep.result, rep.mission
-    L = []
-    flight = (r.t_end - r.t_start) / DAY_S
-    L.append(c("=== RÉSULTAT DU TIR ===", BOLD))
-    L.append(f"Tir le {format_date(r.t_start)} | barre {rep.rod.length_m:g} m x r={rep.rod.radius_m:g} m "
-             f"({fmt_mass(rep.rod.mass_kg)}) à {rep.speed_kms:.3f} km/s")
-    L.append(f"Énergie à la bouche : {fmt_energy(rep.energy_j)} | recul de la station : {rep.recoil_ms * 1000:.2f} mm/s")
-    if r.outcome == "impact":
-        L.append(f"IMPACT sur {r.body} le {format_date(r.t_end)} (après {flight:,.0f} jours)".replace(",", " "))
-        L.append(f"  Point d'impact : lat {r.impact_lat:+.3f}°, lon {r.impact_lon:+.3f}° | vitesse relative {r.impact_speed:.2f} km/s")
-        e_imp = 0.5 * rep.rod.mass_kg * (r.impact_speed * 1e3) ** 2
-        L.append(f"  Énergie à l'impact : {fmt_energy(e_imp)}")
-        if rep.hit_target_body:
-            L.append(f"  Écart à la cible : {rep.miss_km:,.1f} km (tolérance {m.tolerance_km:g} km)".replace(",", " "))
-        else:
-            L.append(c(f"  Mauvais corps : la cible était {m.target}.", YELLOW))
-    else:
-        txt = {"timeout": "Le projectile erre toujours dans le système solaire (durée max. atteinte).",
-               "lost": "Le projectile a quitté le système solaire.",
-               "time_reached": "Simulation arrêtée."}[r.outcome]
-        L.append(c(txt, YELLOW))
-    if not rep.hit_target_body:
-        d, t = r.closest[m.target]
-        R = system.get(m.target).radius
-        L.append(f"  Plus proche approche de {m.target} : {d:,.0f} km du centre (altitude {d - R:,.0f} km) le {format_date(t)}".replace(",", " "))
-    ok = lambda b: c("OK", GREEN) if b else c("ÉCHEC", RED)
-    L.append(f"  Contrôles : précision {ok(rep.hit_target_body and rep.miss_km <= m.tolerance_km)}"
-             f" | énergie {ok(rep.energy_ok)}"
-             + (f" | pénétration {rep.penetration_m:.1f} m {ok(rep.penetration_ok)}" if rep.penetration_m else "")
-             + (f" | délai {ok(rep.flight_ok)}" if m.max_flight_days else ""))
-    if rep.success:
-        L.append(c(f"MISSION ACCOMPLIE ! Score : {rep.score}", BOLD, GREEN) + "  (tapez 'next' pour la suivante)")
-    else:
-        L.append(c("Cible manquée ou conditions non remplies.", RED))
-    return "\n".join(L)

@@ -21,7 +21,7 @@ def _stumpff(z):
     return C, S
 
 
-_GRID = np.concatenate([np.linspace(-120.0, -1.0, 60), np.linspace(-1.0, 4 * np.pi ** 2 - 1e-6, 120)])
+_GRID = np.concatenate([-np.logspace(4.3, 0.0, 90)[:-1], np.linspace(-1.0, 4 * np.pi ** 2 - 1e-6, 120)])
 
 
 def lambert(r1, r2, tof, mu, prograde=True):

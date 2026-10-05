@@ -55,8 +55,13 @@ def plot_system(system, t, title=None):
     return fig
 
 
-def plot_shot(system, report):
-    res, m = report.result, report.mission
+def plot_shot(system, res, target_body, title="Tir"):
+    """Trajectoire d'un tir interplanétaire. `target_body` : planète visée (ou None pour un astéroïde)."""
+    class _M:  # noqa
+        pass
+    m = _M()
+    m.target = target_body or "Saturne"
+    m.title = title
     k = max(1, len(res.times) // 2500)
     ts = res.times[::k]
     if ts[-1] != res.times[-1]:
@@ -114,7 +119,7 @@ def plot_shot(system, report):
 
     ax3.semilogy(days, np.maximum(dist, 1.0), color="cyan")
     ax3.axhline(R, color="orangered", ls="--", lw=1, label=f"surface de {m.target}")
-    ax3.set_xlabel("jours depuis le tir", color="#aab")
+    ax3.set_xlabel("jours depuis le tir" if days[-1] > 3 else "jours depuis le tir (vol très court)", color="#aab")
     ax3.set_ylabel(f"distance à {m.target} (km)", color="#aab")
     ax3.set_title("Distance à la cible", color="w", fontsize=10)
     ax3.legend(facecolor="#112", labelcolor="w", fontsize=8)
@@ -126,6 +131,6 @@ def plot_shot(system, report):
         ax4.plot(*rel[-1, :2], "x", color="white", ms=9)
     ax4.set_aspect("equal")
     ax4.set_title(f"Approche de {m.target} (km, repère de la planète)", color="w", fontsize=10)
-    fig.suptitle(f"Tir du {format_date(res.t_start)} : {m.title}", color="w")
+    fig.suptitle(f"Tir du {format_date(res.t_start)} : {title}", color="w")
     fig.tight_layout()
     return fig

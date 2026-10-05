@@ -9,7 +9,7 @@ from typing import Optional
 
 import numpy as np
 
-from ..constants import AU_KM, DAY_S, YEAR_S
+from ..constants import AU_KM, C_KMS, DAY_S, YEAR_S
 from ..solarsystem.rotation import latlon_from_vector
 from ..solarsystem.system import SolarSystem
 
@@ -28,21 +28,28 @@ class ShotResult:
     closest: dict = field(default_factory=dict)   # nom -> (distance centre km, t)
     steps: int = 0
     final_pos: Optional[np.ndarray] = None
+    final_vel: Optional[np.ndarray] = None
 
 
 class Propagator:
-    def __init__(self, system: SolarSystem, eta=0.02, dt_max=DAY_S, dt_min=1.0):
+    def __init__(self, system: SolarSystem, eta=0.02, dt_max=DAY_S, dt_min=1e-5):
         self.system = system
         self.eta, self.dt_max, self.dt_min = eta, dt_max, dt_min
         self._gm = system.gm
         self._rad2 = system.radius ** 2
         self._inv_r3 = 1.0 / system.radius ** 3
 
-    def _acc(self, r, P):
+    def _acc(self, r, v, P):
+        """Accélération gravitationnelle post-newtonienne (valable jusqu'à v -> c, champ faible).
+
+        a = sum_i GM_i/d^3 * [ (1 + v^2/c^2) d - 4 (d.v) v / c^2 ]   (d : vers le corps)
+        Pour v << c on retrouve la loi de Newton ; pour v = c on retrouve la déflexion double de la lumière.
+        """
         d = P - r
         d2 = np.einsum("ij,ij->i", d, d)
-        k = np.where(d2 < self._rad2, self._inv_r3, np.maximum(d2, self._rad2) ** -1.5)  # sphère homogène à l'intérieur
-        return (self._gm * k) @ d
+        k = self._gm * np.where(d2 < self._rad2, self._inv_r3, np.maximum(d2, self._rad2) ** -1.5)
+        ic2 = 1.0 / (C_KMS * C_KMS)
+        return (1.0 + (v @ v) * ic2) * (k @ d) - 4.0 * ic2 * v * (k @ (d @ v))
 
     def run(self, t0, r0, v0, t_end=None, max_duration=40 * YEAR_S, stop_on_hit=True,
             max_steps=150_000) -> ShotResult:
@@ -75,13 +82,13 @@ class Propagator:
 
             Pm = sys_.positions(t + 0.5 * dt)
             P1, V1 = sys_.states(t + dt)
-            a1 = self._acc(r, P0)
+            a1 = self._acc(r, v, P0)
             k2r = v + 0.5 * dt * a1
-            a2 = self._acc(r + 0.5 * dt * v, Pm)
+            a2 = self._acc(r + 0.5 * dt * v, k2r, Pm)
             k3r = v + 0.5 * dt * a2
-            a3 = self._acc(r + 0.5 * dt * k2r, Pm)
+            a3 = self._acc(r + 0.5 * dt * k2r, k3r, Pm)
             k4r = v + dt * a3
-            a4 = self._acc(r + dt * k3r, P1)
+            a4 = self._acc(r + dt * k3r, k4r, P1)
             r_new = r + dt / 6.0 * (v + 2 * k2r + 2 * k3r + k4r)
             v_new = v + dt / 6.0 * (a1 + 2 * a2 + 2 * a3 + a4)
 
@@ -111,7 +118,8 @@ class Propagator:
         d = np.linalg.norm(r - P0, axis=1)
         upd = d < dmin
         dmin[upd], tmin[upd] = d[upd], t
-        res = ShotResult(outcome, t0, t, np.array(ts), np.array(rs), steps=steps, final_pos=r.copy())
+        res = ShotResult(outcome, t0, t, np.array(ts), np.array(rs), steps=steps, final_pos=r.copy(),
+                         final_vel=v.copy())
         res.closest = {n: (float(dmin[i]), float(tmin[i])) for i, n in enumerate(sys_.names)}
         if hit is not None:
             i, s, rel, vimp, t_hit = hit
