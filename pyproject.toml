@@ -3,10 +3,11 @@ name = "saturn-gauss"
 version = "1.0.0"
 description = "Artilleur du futur : canon de Gauss orbitant Saturne, système solaire 3D simulé"
 requires-python = ">=3.9"
-dependencies = ["numpy>=1.24", "matplotlib>=3.7"]
+dependencies = ["numpy>=1.24", "matplotlib>=3.7", "PySide6>=6.5"]
 
 [project.scripts]
 saturn-gauss = "saturn_gauss.main:main"
+saturn-gauss-gui = "saturn_gauss.gui.app:run"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

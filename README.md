@@ -9,13 +9,43 @@ astéroïdes, frapper des cibles planétaires — en gérant argent, munitions, 
 
 ```bash
 pip install -r requirements.txt
-python main.py                   # jeu complet
+python main.py                   # jeu complet en terminal (voir aussi l'interface graphique ci-dessous)
 python main.py --no-assist       # sans ordinateur de visée interplanétaire (expert)
 python main.py --save-plots      # graphes en PNG (plots/) au lieu de fenêtres
 python main.py --seed 42         # graine du hasard (événements reproductibles)
 python main.py --load partie     # charge saves/partie.pkl
-python -m pytest -m "not slow"   # tests rapides (2 s) ; sans -m : tout (~25 s)
+python -m pytest -m "not slow"   # tests rapides ; sans -m : tout (~1 min, tests de l'interface inclus)
 ```
+
+## Interface graphique (recommandée)
+
+```bash
+pip install -r requirements.txt     # numpy, matplotlib, PySide6 (Qt)
+python gui.py                       # ou : python -m saturn_gauss.gui
+python gui.py --seed 42 --no-assist --load saves/partie.pkl
+```
+
+Une fenêtre unique à **6 onglets** ; l'en-tête (date, crédits, rang, contrôle du temps ▶ / +1 h / +1 j…, barre d'espace
+= lecture/pause) et le bandeau rouge des **événements prioritaires** restent visibles partout.
+
+| Onglet | Contenu |
+|---|---|
+| 📋 **Contrats** | tableau des contrats et événements ⚠, accepter / refuser / travailler dessus, briefing, état des stations |
+| 🌌 **Système solaire** | vue 3D animée (orbites inclinées, **rotation propre** : axe + méridien origine), présets, centrage sur un corps, tableau des planètes |
+| ⚔ **Combat** | espace de Saturne en 3D (stations, canon, vaisseaux, trajectoires, tirs), **vaisseau en boîtes 3D** cliquables (couleur = intégrité, bulle = bouclier), visibilité de la cible depuis chaque station, projectile, visée, calculatrice, journal |
+| 🎯 **Tir interplanétaire** | frappes, flottes, astéroïdes : projectile, fenêtres de tir pour *votre* vitesse, plan, correction, tir ; trajectoire 3D + graphes (distance, approche finale) |
+| 🛠 **Stations & économie** | état et réparations, lanceurs, améliorations, sauvegarde / chargement / nouvelle partie |
+| ⌨ **Console** | journal de tous les événements + toutes les commandes du mode terminal |
+
+Les vues 3D (QPainter, sans OpenGL) se tournent à la souris, la molette zoome, le double-clic réinitialise.
+Dans le combat, cliquez un composant dans la vue 3D ou dans la liste, une station dans l'espace de Saturne, puis
+« Ordinateur de bord » (150 cr) ou calculez vous-même avec « Données pour calculer » et la calculatrice.
+Les calculs longs (fenêtres, correction, tirs interplanétaires) tournent en tâche de fond : l'interface ne se fige pas.
+Captures dans `docs/`.
+
+*Dépannage Windows* : si vous voyez `AttributeError: '_SixMetaPathImporter' object has no attribute '_path'`,
+mettez à jour les dépendances : `pip install --upgrade PySide6 six python-dateutil matplotlib`
+(le code charge déjà matplotlib avant PySide6 pour éviter ce conflit). Le mode terminal reste disponible : `python main.py`.
 
 ## Le jeu en bref
 
@@ -95,7 +125,8 @@ Les chiffres d'équilibrage sont dans `economy.py`, `combat/ships.py`, `combat/a
 
 ```
 saturn_gauss/
-├── main.py
+├── main.py  gui.py           terminal / interface graphique
+├── docs/                     captures d'écran
 ├── saturn_gauss/
 │   ├── constants.py  timeutils.py  main.py
 │   ├── solarsystem/          Soleil + 8 planètes : orbites képlériennes 3D, rotation propre (IAU)
@@ -108,7 +139,10 @@ saturn_gauss/
 │   ├── economy.py            crédits, coûts, améliorations
 │   ├── career.py             le monde : temps, événements, tirs, boutique, sauvegarde
 │   ├── game/missions.py      les 6 frappes planétaires de la campagne
-│   └── ui/                   shell (terminal.py), tableaux, vue des vaisseaux (ASCII + matplotlib), graphes
+│   ├── ui/                   mode terminal : shell, tableaux, vue des vaisseaux (ASCII + matplotlib), graphes
+│   ├── briefing.py           texte des briefings
+│   └── gui/                  interface Qt : main_window, view3d (moteur 3D QPainter), system_view, saturn_view,
+│                             ship_view, charts, workers (threads), tabs/ (un fichier par onglet)
 └── tests/                    pytest : monde, balistique relativiste, combat, carrière, scénarios de bout en bout
 ```
 
@@ -120,26 +154,11 @@ saturn_gauss/
   pour tester « < 50 % de c ».
 - `eval` restreint pour `calc` (jeu local).
 
-## Ce que l'on peut faire
-Pour les mission de destruction de vaisseau qui attaque la planete j'aimerais que les vaisseau ait des bouclier capable de dissipé une certaine quantité d'énérgie puis que il y ait la coque dérière et que les vaisseau soit divisé en plusieur partie qui changerait en fonction de la classe du vaisseau. Que certain projectile soit plus effiace contre les boucliers ou la coque. Par exemple un prejectile contenant de la férite cappable de dissipé les boucliers ou bien une barre en tungstène avec d'abord un pic pour transpèrsé la coque puis une ogive pour faire explosé l'intérieur du vaisseau.
-
-J'aimerais qu'il y ait un autre type d'attaque de vaisseau. Celui qui passent par les contract et qui attaque une autre planete que la notre et donc beaucoup trop loin pour que les canon orbitaux de défense les attaque. Il faudra alors utilisé le canon intérplanétaire pour envoiyer une bombe nucleaire ou à antimatière pour faire explosé le groupe de vaisseau. Les vaisseau enemie pourrait aussi nous attaqué il faudrait donc bien choissir quelle partie du vaisseau détruire en premier pour être le plus éfficase. Si une station est détruite ou endomagé il faudra alors la réparer et cela coutera de l'argent. Tout comme les projectile et l'energie utilisé pour les tiré qui ne sont pas gratuit.
-
-J'aimerais qu'il y ait plusieur type de vaisseau : Classe capitale (les plus gros), destroyer, transport de troupe, minié, patrouilleur, soutien, corvette, frégate etc
-
-Les projectile tiré par les station orbital sont beaucoup plus petit (ayant une taille max) mais toujour très rapide (< à 50% de c)
-
-les station de défense orbital serait plus nombreuse et dispérsé tout autour de la planète. On pourra donc choisir la quelle on souhaite pour executé la mission.
-
-J'aimerais que tout cela tourne sur la même partie, c'est a dire pas besoin d'aller dans un menu pour changé le mode de jeu. Je prefererais que l'on puissent choisir avec quoi tiré en fonction de la mission dinamiquement. Que l'on puissent dire oui ou bien refusé un contract mais pas les mission prioritaire comme les attaque de vaisseau enemie sur la planète ou bien les asteroide.
-
-Le canon inter planetaire devra tiré des projectiles plus rapide et les mission demander plus d'énérgie pour évité des année de voyage.
-
-Au niveau du gameplay il faudrait quelque chose de beaucoup moins basé sur la chance et deanderais peut etre a faire un peu de calcule si necessaire. Imaginons qu'une mission prioritaire d'un destroyer qui arrive sur la planete. Sont angle d'arrivé et alors indiqué. On sélectionne la station de défense qui correspond le mieux a l'angle de tire. Depuis cette station il faudrait qu'il s'affiche sur notre interface le vaisseau fait de boite qui correspond au different composant de celui-ci que l'on peut detruire. On peut alors en selectionné un et le jeu nous donne des coordonné par rapport à la planete et il est alors a nous de calculer l'orientation de la station. Il nous faut alors ensuite choisir le projectile. La vitesse des projectile etant très grande on peut considére qu'il vont en ligne droite alors on choisi la vitesse entre 50 et 95 % de c et on fait feu puis on voit comment la cible réagit et on recommence.
-
 ## Pistes d'extension restantes
 Lunes (Titan, Lune) comme bases ou cibles ; cibles gazeuses (ciblage « plan B » plutôt qu'un point à date fixe) ;
-perturbations Soleil-barycentre ; interface `curses` ; canon orbital tirant sur le sol ; convois à protéger ;
+perturbations Soleil-barycentre ; sons et animations de tir ; vue 3D OpenGL (Qt3D) ; canon orbital tirant sur le sol ; convois à protéger ;
 gestion de ressources (stock de munitions, usine) ; vaisseaux ennemis qui manœuvrent ; équipes de réparation.
 
 Quand un vaisseau nous attaque, l'utilisation d'une bombe atomique pour désactivé les bouclier du vaisseau porrait etre utilisale. On devrais calculer le temps avant l'explosion et le rentré à la main. Car pour que la bombe soit efficase contre les bouclier il faudrait que la bombe explose avant les bouclier dans un intervalle de 50m-500m avant les bouclier, il nous faudrait alors determiner à la main le temps avant la détonation en fonction de la distance et de la vitesse du projectile.
+
+Une mécanique plus engageante pour le joueur lors des attaque sur la planete.

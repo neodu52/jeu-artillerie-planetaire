@@ -382,6 +382,8 @@ class Career:
         E, ammo = self.kinetic_energy(), self.ammo_spec
         rep = {"kind": "ship", "hit": False, "lines": []}
         hit = eng.locate_hit(origin, d, vp, battle.ships, self.t)
+        rep["origin"] = origin.copy()
+        rep["end"] = origin + d * 2.0e6
         ship_sel = None
         if self.target_sel:
             ship_sel = next((s for s in battle.ships if s.id == self.target_sel[0]), None)
@@ -401,6 +403,7 @@ class Career:
         else:
             dist, ship, idx, tau = hit
             rep["hit"], rep["ship"], rep["comp"] = True, ship.name, ship.comps[idx].name
+            rep["comp_index"], rep["end"] = idx, origin + d * dist
             comp = ship.comps[idx]
             r = dmg.apply_hit(ship, idx, ammo, E, self.length, self.mass_kg())
             ship.last_attacker = sh.id
