@@ -162,3 +162,6 @@ gestion de ressources (stock de munitions, usine) ; vaisseaux ennemis qui manœu
 Quand un vaisseau nous attaque, l'utilisation d'une bombe atomique pour désactivé les bouclier du vaisseau porrait etre utilisale. On devrais calculer le temps avant l'explosion et le rentré à la main. Car pour que la bombe soit efficase contre les bouclier il faudrait que la bombe explose avant les bouclier dans un intervalle de 50m-500m avant les bouclier, il nous faudrait alors determiner à la main le temps avant la détonation en fonction de la distance et de la vitesse du projectile.
 
 Une mécanique plus engageante pour le joueur lors des attaque sur la planete.
+
+Utilisation d'open gl ou autre biblioteque pour implémenter des animation 3D ou visualisation. 
+Faire des modèle 3D pas trop complexe pour les vaisseau qui ataque la planete et les divisé en pluieur compartiment pour pouvoir les sélectinnnée
